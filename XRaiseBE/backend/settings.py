@@ -101,9 +101,12 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
+JWT_ACCESS_MINUTES = int(os.getenv("JWT_ACCESS_MINUTES", "1"))
+JWT_REFRESH_MINUTES = int(os.getenv("JWT_REFRESH_MINUTES", "1440"))
+
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=JWT_ACCESS_MINUTES),
+    "REFRESH_TOKEN_LIFETIME": timedelta(minutes=JWT_REFRESH_MINUTES),
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
