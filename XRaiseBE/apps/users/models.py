@@ -27,3 +27,5 @@ class User(AbstractUser):
     total_amount_paid = models.PositiveBigIntegerField(default=0)  # stored in cents
     stripe_customer_id = models.CharField(max_length=128, null=True)
 
+    def __str__(self):
+        return f"{self.username} ({self.email})"
