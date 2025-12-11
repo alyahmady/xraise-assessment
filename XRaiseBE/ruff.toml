@@ -1,0 +1,111 @@
+exclude = [
+    ".git",
+    ".ipynb_checkpoints",
+    ".ruff_cache",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+    ".venv",
+    ".idea",
+    "logs",
+    "media",
+    "postgres_data",
+    "redis_data",
+    "static",
+    "staticfiles",
+]
+
+line-length = 125
+indent-width = 4
+
+target-version = "py313"
+
+[lint]
+select = [
+    "E",
+    "F",
+    "W",
+    "C",
+    "I",
+    "N",
+    "S",
+    "B",
+    "G",
+    "Q",
+    "UP",
+    "C4",
+    "DJ",
+    "PT",
+    "PL",
+    "PD",
+    "PGH",
+    "RET",
+    "RSE",
+    "TRY",
+    "T20",
+    "PYI",
+    "PIE",
+    "ERA",
+    "AIR",
+    "LOG",
+    "RUF",
+    "NPY",
+    "FLY",
+    "INP",
+    "TCH",
+    "ICN",
+    "INT",
+    "PTH",
+    "TID",
+    "EXE",
+    "ISC",
+    "COM",
+    "YTT",
+    "DTZ",
+    "SIM",
+    "FURB",
+    "PERF",
+    "SLOT",
+    "ASYNC",
+    "D201",
+    "D204",
+    "D207",
+    "D208",
+    "D209",
+    "D211",
+    "D212",
+]
+ignore = ["TRY003"]
+
+fixable = ["ALL"]
+unfixable = []
+
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = true
+line-ending = "auto"
+
+docstring-code-format = false
+docstring-code-line-length = "dynamic"
+
+[lint.mccabe]
+max-complexity = 10
+
+[lint.per-file-ignores]
+"**/views.py" = [
+    "RUF012"
+]
+"**/models.py" = [
+    "DJ001"
+]
+"**/migrations/*.py" = [
+    "RUF012"
+]
