@@ -2,7 +2,7 @@ from uvicorn_worker import UvicornWorker as BaseUvicornWorker
 
 
 class UvicornWorker(BaseUvicornWorker):
-    CONFIG_KWARGS = {"loop": "uvloop", "http": "httptools", "lifespan": "off"}
+    CONFIG_KWARGS = {"loop": "uvloop", "http": "httptools", "lifespan": "off"}  # noqa: RUF012
 
 
 accesslog = "-"

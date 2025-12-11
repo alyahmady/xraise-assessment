@@ -1,12 +1,11 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-User = get_user_model()
+from apps.users.models import User
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, style={'input_type': 'password'}, trim_whitespace=False)
+    password = serializers.CharField(write_only=True, style={"input_type": "password"}, trim_whitespace=False)
 
     class Meta:
         model = User
@@ -30,7 +29,7 @@ class JWTSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
+        token["user_id"] = user.id
         token["subscription_status"] = user.subscription_status
         token["current_plan"] = user.current_plan
         return token
-

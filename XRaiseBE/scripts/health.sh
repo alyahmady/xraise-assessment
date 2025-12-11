@@ -1,3 +1,3 @@
 #!/bin/sh
 
-curl --fail http://localhost:8000/health/ || exit 1
+curl --fail http://localhost:8000/api/health/ || exit 1

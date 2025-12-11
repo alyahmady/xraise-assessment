@@ -8,4 +8,3 @@ urlpatterns = [
     path("downgrade/", DowngradeView.as_view(), name="downgrade"),
     path("webhook/stripe/", stripe_webhook, name="stripe_webhook"),
 ]
-

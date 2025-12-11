@@ -29,7 +29,7 @@ ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && \
     apt-get install -yqq --no-install-recommends \
-    curl nano supervisor && \
+    curl nano && \
     apt-get autoremove && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -38,15 +38,9 @@ COPY --from=compile-image /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 COPY apps /app/apps
-COPY config /app/config
+COPY backend /app/backend
 COPY manage.py /app/manage.py
 COPY gunicorn_conf.py /app/gunicorn_conf.py
-
-COPY supervisor/supervisord.conf /etc/supervisor/supervisord.conf
-COPY supervisor/api.conf /etc/supervisor/conf.d/api.conf
-
-RUN mkdir -p /app/logs/
-RUN mkdir -p /var/log/supervisor/
 
 COPY scripts /app/scripts
 RUN sed -i 's/\r$//g' /app/scripts/*.sh

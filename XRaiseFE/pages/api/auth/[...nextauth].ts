@@ -1,20 +1,23 @@
 import axios from "axios";
 import CredentialsProvider from "next-auth/providers/credentials";
 import NextAuth, { NextAuthOptions } from "next-auth";
+import { JWT } from "next-auth/jwt";
 
-const backendBase = process.env.BACKEND_URL || "http://localhost:8000";
+// Use BACKEND_URL for server-side requests (Docker service name)
+// Fall back to NEXT_PUBLIC_BACKEND_URL for local development
+const backendBase = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
 
 const decodeJwt = (token: string) => {
   try {
     const payload = token.split(".")[1];
     const decoded = Buffer.from(payload, "base64").toString("utf8");
     return JSON.parse(decoded);
-  } catch (err) {
+  } catch {
     return null;
   }
 };
 
-const refreshAccessToken = async (token: any) => {
+const refreshAccessToken = async (token: JWT): Promise<JWT> => {
   try {
     const response = await axios.post(`${backendBase}/api/users/token/refresh/`, {
       refresh: token.refreshToken,
@@ -27,8 +30,10 @@ const refreshAccessToken = async (token: any) => {
       accessTokenExpires: decoded?.exp ? decoded.exp * 1000 : Date.now() + 50 * 60 * 1000,
       subscription_status: decoded?.subscription_status || token.subscription_status,
       current_plan: decoded?.current_plan || token.current_plan,
+      error: undefined, // Clear any previous errors
     };
   } catch (error) {
+    console.error("Failed to refresh access token:", error);
     return { ...token, error: "RefreshAccessTokenError" };
   }
 };
@@ -56,12 +61,13 @@ export const authOptions: NextAuthOptions = {
             id: decoded?.user_id?.toString() || credentials.username,
             accessToken: access,
             refreshToken: refresh,
-            subscription_status: decoded?.subscription_status,
-            current_plan: decoded?.current_plan,
+            subscription_status: decoded?.subscription_status || "inactive",
+            current_plan: decoded?.current_plan || "none",
             accessTokenExpires: decoded?.exp ? decoded.exp * 1000 : Date.now() + 50 * 60 * 1000,
             username: credentials.username,
           };
         } catch (error) {
+          console.error("Login failed:", error);
           return null;
         }
       },
@@ -71,40 +77,48 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
+        // Initial sign in - store user data in token
         if (user) {
           return {
             ...token,
-            accessToken: (user as any).accessToken,
-            refreshToken: (user as any).refreshToken,
-            accessTokenExpires: (user as any).accessTokenExpires,
-            subscription_status: (user as any).subscription_status,
-            current_plan: (user as any).current_plan,
-            username: (user as any).username,
+            accessToken: user.accessToken,
+            refreshToken: user.refreshToken,
+            accessTokenExpires: user.accessTokenExpires,
+            subscription_status: user.subscription_status,
+            current_plan: user.current_plan,
+            username: user.username,
+            error: undefined,
           };
         }
 
-        if (token.accessTokenExpires && Date.now() < (token.accessTokenExpires as number) - 60 * 1000) {
+        // Force refresh when update is triggered
+        if (trigger === "update") {
+          return refreshAccessToken(token);
+        }
+
+        // Token is still valid - return it as is
+        if (token.accessTokenExpires && Date.now() < token.accessTokenExpires - 60 * 1000) {
           return token;
         }
 
+        // Token is expired or about to expire - refresh it
         return refreshAccessToken(token);
     },
     async session({ session, token }) {
-      (session as any).accessToken = token.accessToken;
-      (session as any).refreshToken = token.refreshToken;
-      (session as any).subscription_status = token.subscription_status;
-      (session as any).current_plan = token.current_plan;
-      (session as any).username = token.username;
-      (session as any).error = token.error;
+      session.accessToken = token.accessToken;
+      session.refreshToken = token.refreshToken;
+      session.subscription_status = token.subscription_status;
+      session.current_plan = token.current_plan;
+      session.username = token.username;
+      session.error = token.error;
       return session;
     },
   },
   pages: {
     signIn: "/",
   },
-  secret: process.env.NEXTAUTH_SECRET || "changeme",
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 export default NextAuth(authOptions);
-

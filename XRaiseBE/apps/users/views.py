@@ -1,12 +1,9 @@
-from django.contrib.auth import get_user_model
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from apps.users.serializers import JWTSerializer, RegisterSerializer, UserStatsSerializer
-
-User = get_user_model()
 
 
 class RegisterView(APIView):
@@ -27,4 +24,3 @@ class UserStatsView(APIView):
 
 class JWTLoginView(TokenObtainPairView):
     serializer_class = JWTSerializer
-

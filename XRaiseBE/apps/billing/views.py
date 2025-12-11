@@ -1,26 +1,24 @@
 import stripe
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import permissions, status
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.decorators import api_view, permission_classes
 
 from apps.billing.models import CheckoutSession, SubscriptionEvent
 from apps.billing.serializers import BillingStatusSerializer, DowngradeSerializer, UpgradeSerializer
-from apps.users.models import PremiumPlan, SubscriptionStatus
-
-User = get_user_model()
+from apps.users.models import PremiumPlan, SubscriptionStatus, User
+from backend.enums import Currency, PlanPrice
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
-def _plan_to_price(plan: str) -> str:
+def plan_to_price(plan: str) -> int:
     if plan == PremiumPlan.BASIC:
-        return settings.STRIPE_PRICE_BASIC
+        return PlanPrice.BASIC
     if plan == PremiumPlan.PRO:
-        return settings.STRIPE_PRICE_PRO
+        return PlanPrice.PRO
     raise ValueError("Unsupported plan for price lookup")
 
 
@@ -35,14 +33,22 @@ class UpgradeView(APIView):
         serializer = UpgradeSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         plan = serializer.validated_data["plan"]
-        price_id = _plan_to_price(plan)
 
         success_url = f"{settings.FRONTEND_URL}/dashboard?session_id={{CHECKOUT_SESSION_ID}}"
         cancel_url = f"{settings.FRONTEND_URL}/dashboard"
 
         session = stripe.checkout.Session.create(
             mode="payment",
-            line_items=[{"price": price_id, "quantity": 1}],
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": Currency.US_DOLLAR.lower(),
+                        "product_data": {"name": f"{plan.title()} Plan Upgrade"},
+                        "unit_amount": plan_to_price(plan),
+                    },
+                    "quantity": 1,
+                }
+            ],
             success_url=success_url,
             cancel_url=cancel_url,
             metadata={"user_id": request.user.id, "plan": plan},
@@ -71,13 +77,21 @@ class DowngradeView(APIView):
             )
             return Response({"detail": "Downgraded to no plan"})
 
-        price_id = _plan_to_price(plan)
         success_url = f"{settings.FRONTEND_URL}/dashboard?session_id={{CHECKOUT_SESSION_ID}}"
         cancel_url = f"{settings.FRONTEND_URL}/dashboard"
 
         session = stripe.checkout.Session.create(
             mode="payment",
-            line_items=[{"price": price_id, "quantity": 1}],
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": Currency.US_DOLLAR.lower(),
+                        "product_data": {"name": f"{plan.title()} Plan"},
+                        "unit_amount": plan_to_price(plan),
+                    },
+                    "quantity": 1,
+                }
+            ],
             success_url=success_url,
             cancel_url=cancel_url,
             metadata={"user_id": request.user.id, "plan": plan},
@@ -94,17 +108,15 @@ def stripe_webhook(request):
     payload = request.body
     sig_header = request.META.get("HTTP_STRIPE_SIGNATURE", "")
     try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
-        )
+        event = stripe.Webhook.construct_event(payload, sig_header, settings.STRIPE_WEBHOOK_SECRET)
     except (ValueError, stripe.error.SignatureVerificationError):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    if event["type"] == "checkout.session.completed":
+    if event["type"] == "payment_intent.succeeded":
         session = event["data"]["object"]
         user_id = session["metadata"].get("user_id")
         plan = session["metadata"].get("plan")
-        amount_total = session.get("amount_total", 0)
+        amount_total = session.get("amount", 0)
 
         try:
             user = User.objects.get(id=user_id)
@@ -117,7 +129,7 @@ def stripe_webhook(request):
         user.save(update_fields=["current_plan", "subscription_status", "total_amount_paid"])
 
         CheckoutSession.objects.filter(session_id=session["id"]).update(
-            status=CheckoutSession.SessionStatus.COMPLETED, amount_total=amount_total
+            status=CheckoutSession.SessionStatus.COMPLETED, amount_total=amount_total,
         )
         SubscriptionEvent.objects.create(
             user=user,
@@ -129,4 +141,3 @@ def stripe_webhook(request):
         )
 
     return Response(status=status.HTTP_200_OK)
-

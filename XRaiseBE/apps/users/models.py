@@ -15,20 +15,11 @@ class PremiumPlan(models.TextChoices):
 
 class User(AbstractUser):
     subscription_status = models.CharField(
-        max_length=16,
-        choices=SubscriptionStatus.choices,
-        default=SubscriptionStatus.INACTIVE,
+        max_length=16, choices=SubscriptionStatus.choices, default=SubscriptionStatus.INACTIVE,
     )
-    current_plan = models.CharField(
-        max_length=16,
-        choices=PremiumPlan.choices,
-        default=PremiumPlan.NONE,
-    )
+    current_plan = models.CharField(max_length=16, choices=PremiumPlan.choices, default=PremiumPlan.NONE)
     total_amount_paid = models.PositiveBigIntegerField(default=0)  # stored in cents
-    stripe_customer_id = models.CharField(max_length=128, blank=True, null=True)
+    stripe_customer_id = models.CharField(max_length=128, null=True)
 
-    def mark_inactive(self):
-        self.subscription_status = SubscriptionStatus.INACTIVE
-        self.current_plan = PremiumPlan.NONE
-        self.save(update_fields=["subscription_status", "current_plan"])
-
+    def __str__(self):
+        return f"{self.username} ({self.email})"

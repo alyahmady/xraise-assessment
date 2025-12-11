@@ -1,45 +1,64 @@
-import axios from "axios";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import Link from "next/link";
 import { useEffect, useState } from "react";
-
-const backendBase = process.env.BACKEND_URL || "http://localhost:8000";
+import axiosInstance from "../lib/axios";
 
 type BillingStatus = {
   subscription_status: string;
   current_plan: string;
   total_amount_paid: number;
-  lifetime_spend: number;
 };
 
 export default function Dashboard() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const router = useRouter();
   const [billing, setBilling] = useState<BillingStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    if (session?.error === "RefreshAccessTokenError") {
+      signOut({ callbackUrl: "/" });
+    }
+  }, [session?.error]);
+
   const fetchStatus = async () => {
     if (!session?.accessToken) return;
     try {
-      const response = await axios.get(`${backendBase}/api/billing/status/`, {
-        headers: { Authorization: `Bearer ${session.accessToken}` },
-      });
+      const response = await axiosInstance.get("/api/billing/status/");
       setBilling(response.data);
-    } catch (err) {
+      setError("");
+    } catch {
       setError("Failed to load status");
+    }
+  };
+
+  const refreshSession = async () => {
+    try {
+      // Trigger NextAuth to refresh the token and update the session
+      await update();
+      // Fetch the latest billing status
+      await fetchStatus();
+    } catch (error) {
+      console.error("Failed to refresh session:", error);
     }
   };
 
   useEffect(() => {
     if (status === "authenticated") {
-      fetchStatus();
       if (router.query.session_id) {
+        // User returned from checkout - refresh the session to get updated plan
+        refreshSession();
+        // Remove the session_id from URL to prevent repeated refreshes
+        router.replace("/dashboard", undefined, { shallow: true });
+      } else {
         fetchStatus();
       }
     } else if (status === "unauthenticated") {
       router.push("/");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, router.query.session_id]);
 
   const formatCurrency = (cents: number) => `$${(cents / 100).toFixed(2)}`;
@@ -49,17 +68,13 @@ export default function Dashboard() {
     setLoading(true);
     setError("");
     try {
-      const response = await axios.post(
-        `${backendBase}/api/billing/${path}/`,
-        { plan },
-        { headers: { Authorization: `Bearer ${session.accessToken}` } }
-      );
+      const response = await axiosInstance.post(`/api/billing/${path}/`, { plan });
       if (response.data.checkout_url) {
         window.location.href = response.data.checkout_url;
       } else {
         await fetchStatus();
       }
-    } catch (err) {
+    } catch {
       setError("Unable to start checkout");
     } finally {
       setLoading(false);
@@ -104,11 +119,12 @@ export default function Dashboard() {
       </div>
 
       <div style={{ marginTop: 24 }}>
-        <button onClick={() => router.push("/premium")}>Go to Premium Page</button>
+        <Link href="/premium" style={{ textDecoration: "none" }}>
+          <button>Go to Premium Page</button>
+        </Link>
       </div>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
 }
-
