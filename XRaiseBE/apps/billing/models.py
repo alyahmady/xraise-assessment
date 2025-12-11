@@ -19,10 +19,6 @@ class CheckoutSession(models.Model):
     amount_total = models.PositiveBigIntegerField(default=0)  # cents
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def mark_completed(self, amount_cents: int):
-        self.status = self.SessionStatus.COMPLETED
-        self.amount_total = amount_cents
-        self.save(update_fields=["status", "amount_total"])
 
 
 class SubscriptionEvent(models.Model):
