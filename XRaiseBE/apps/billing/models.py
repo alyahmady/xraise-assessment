@@ -10,7 +10,7 @@ class CheckoutSession(models.Model):
         COMPLETED = "completed", "Completed"
         FAILED = "failed", "Failed"
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     plan = models.CharField(max_length=16, choices=PremiumPlan.choices)
     session_id = models.CharField(max_length=128, unique=True)
     status = models.CharField(
@@ -24,7 +24,7 @@ class CheckoutSession(models.Model):
 
 
 class SubscriptionEvent(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     event_type = models.CharField(max_length=64)
     plan = models.CharField(max_length=16, choices=PremiumPlan.choices)
     subscription_status = models.CharField(
