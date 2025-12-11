@@ -1,9 +1,7 @@
-import axios from "axios";
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-
-const backendBase = process.env.BACKEND_URL || "http://localhost:8000";
+import axiosInstance from "../lib/axios";
 
 type BillingStatus = {
   subscription_status: string;
@@ -22,9 +20,7 @@ export default function Dashboard() {
   const fetchStatus = async () => {
     if (!session?.accessToken) return;
     try {
-      const response = await axios.get(`${backendBase}/api/billing/status/`, {
-        headers: { Authorization: `Bearer ${session.accessToken}` },
-      });
+      const response = await axiosInstance.get("/api/billing/status/");
       setBilling(response.data);
     } catch (err) {
       setError("Failed to load status");
@@ -49,11 +45,7 @@ export default function Dashboard() {
     setLoading(true);
     setError("");
     try {
-      const response = await axios.post(
-        `${backendBase}/api/billing/${path}/`,
-        { plan },
-        { headers: { Authorization: `Bearer ${session.accessToken}` } }
-      );
+      const response = await axiosInstance.post(`/api/billing/${path}/`, { plan });
       if (response.data.checkout_url) {
         window.location.href = response.data.checkout_url;
       } else {
