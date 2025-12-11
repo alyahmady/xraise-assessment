@@ -19,6 +19,8 @@ class CheckoutSession(models.Model):
     amount_total = models.PositiveBigIntegerField(default=0)  # cents
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"CheckoutSession {self.session_id} - {self.plan} ({self.status})"
 
 
 class SubscriptionEvent(models.Model):
@@ -32,3 +34,5 @@ class SubscriptionEvent(models.Model):
     stripe_reference = models.CharField(max_length=128, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"{self.event_type} - {self.plan} ({self.created_at.strftime('%Y-%m-%d %H:%M')})"
