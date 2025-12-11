@@ -3,14 +3,20 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 
 export default function Premium() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
+
+  useEffect(() => {
+    if (session?.error === "RefreshAccessTokenError") {
+      router.push("/dashboard");
+    }
+  }, [session?.error, router]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/");
     }
-  }, [status]);
+  }, [status, router]);
 
   return (
     <div className="container">
@@ -19,4 +25,3 @@ export default function Premium() {
     </div>
   );
 }
-
