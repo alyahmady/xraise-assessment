@@ -27,8 +27,4 @@ class User(AbstractUser):
     total_amount_paid = models.PositiveBigIntegerField(default=0)  # stored in cents
     stripe_customer_id = models.CharField(max_length=128, blank=True, null=True)
 
-    def mark_inactive(self):
-        self.subscription_status = SubscriptionStatus.INACTIVE
-        self.current_plan = PremiumPlan.NONE
-        self.save(update_fields=["subscription_status", "current_plan"])
 
