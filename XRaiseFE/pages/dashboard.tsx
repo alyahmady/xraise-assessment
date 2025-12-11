@@ -1,5 +1,6 @@
 import { signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import axiosInstance from "../lib/axios";
 
@@ -118,7 +119,9 @@ export default function Dashboard() {
       </div>
 
       <div style={{ marginTop: 24 }}>
-        <button onClick={() => router.push("/premium")}>Go to Premium Page</button>
+        <Link href="/premium" style={{ textDecoration: "none" }}>
+          <button>Go to Premium Page</button>
+        </Link>
       </div>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
