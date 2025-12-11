@@ -1,9 +1,6 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from apps.users.models import PremiumPlan, SubscriptionStatus
-
-User = get_user_model()
+from apps.users.models import PremiumPlan, User
 
 
 class UpgradeSerializer(serializers.Serializer):
