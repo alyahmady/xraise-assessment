@@ -29,6 +29,7 @@ class JWTSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
+        token["user_id"] = user.id
         token["subscription_status"] = user.subscription_status
         token["current_plan"] = user.current_plan
         return token
