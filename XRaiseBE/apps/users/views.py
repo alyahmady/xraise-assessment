@@ -24,4 +24,3 @@ class UserStatsView(APIView):
 
 class JWTLoginView(TokenObtainPairView):
     serializer_class = JWTSerializer
-

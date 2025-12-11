@@ -25,9 +25,7 @@ class SubscriptionEvent(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, db_index=True)
     event_type = models.CharField(max_length=64)
     plan = models.CharField(max_length=16, choices=PremiumPlan.choices)
-    subscription_status = models.CharField(
-        max_length=16, choices=SubscriptionStatus.choices
-    )
+    subscription_status = models.CharField(max_length=16, choices=SubscriptionStatus.choices)
     amount_cents = models.PositiveBigIntegerField(default=0)
     stripe_reference = models.CharField(max_length=128, null=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)

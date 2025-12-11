@@ -47,7 +47,7 @@ class UpgradeView(APIView):
                         "unit_amount": plan_to_price(plan),
                     },
                     "quantity": 1,
-                }
+                },
             ],
             success_url=success_url,
             cancel_url=cancel_url,
@@ -90,7 +90,7 @@ class DowngradeView(APIView):
                         "unit_amount": plan_to_price(plan),
                     },
                     "quantity": 1,
-                }
+                },
             ],
             success_url=success_url,
             cancel_url=cancel_url,
@@ -129,7 +129,7 @@ def stripe_webhook(request):
         user.save(update_fields=["current_plan", "subscription_status", "total_amount_paid"])
 
         CheckoutSession.objects.filter(session_id=session["id"]).update(
-            status=CheckoutSession.SessionStatus.COMPLETED, amount_total=amount_total
+            status=CheckoutSession.SessionStatus.COMPLETED, amount_total=amount_total,
         )
         SubscriptionEvent.objects.create(
             user=user,
