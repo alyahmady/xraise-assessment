@@ -9,4 +9,3 @@ urlpatterns = [
     path("api/users/", include("apps.users.urls")),
     path("api/billing/", include("apps.billing.urls")),
 ]
-
