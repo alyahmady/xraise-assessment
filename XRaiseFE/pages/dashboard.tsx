@@ -27,20 +27,37 @@ export default function Dashboard() {
     try {
       const response = await axiosInstance.get("/api/billing/status/");
       setBilling(response.data);
-    } catch (err) {
+      setError("");
+    } catch {
       setError("Failed to load status");
+    }
+  };
+
+  const refreshSession = async () => {
+    try {
+      // Trigger NextAuth to refresh the token and update the session
+      await update();
+      // Fetch the latest billing status
+      await fetchStatus();
+    } catch (error) {
+      console.error("Failed to refresh session:", error);
     }
   };
 
   useEffect(() => {
     if (status === "authenticated") {
-      fetchStatus();
       if (router.query.session_id) {
+        // User returned from checkout - refresh the session to get updated plan
+        refreshSession();
+        // Remove the session_id from URL to prevent repeated refreshes
+        router.replace("/dashboard", undefined, { shallow: true });
+      } else {
         fetchStatus();
       }
     } else if (status === "unauthenticated") {
       router.push("/");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status, router.query.session_id]);
 
   const formatCurrency = (cents: number) => `$${(cents / 100).toFixed(2)}`;
@@ -56,7 +73,7 @@ export default function Dashboard() {
       } else {
         await fetchStatus();
       }
-    } catch (err) {
+    } catch {
       setError("Unable to start checkout");
     } finally {
       setLoading(false);
