@@ -31,7 +31,7 @@ class SubscriptionEvent(models.Model):
         max_length=16, choices=SubscriptionStatus.choices
     )
     amount_cents = models.PositiveBigIntegerField(default=0)
-    stripe_reference = models.CharField(max_length=128, blank=True, null=True)
+    stripe_reference = models.CharField(max_length=128, null=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
