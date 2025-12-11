@@ -7,7 +7,6 @@ type BillingStatus = {
   subscription_status: string;
   current_plan: string;
   total_amount_paid: number;
-  lifetime_spend: number;
 };
 
 export default function Dashboard() {
