@@ -47,12 +47,6 @@ class DowngradeSerializer(serializers.Serializer):
 
 
 class BillingStatusSerializer(serializers.ModelSerializer):
-    lifetime_spend = serializers.SerializerMethodField()
-
     class Meta:
         model = User
-        fields = ("subscription_status", "current_plan", "total_amount_paid", "lifetime_spend")
-
-    def get_lifetime_spend(self, obj: User):
-        return obj.total_amount_paid / 100
-
+        fields = ("subscription_status", "current_plan", "total_amount_paid")
