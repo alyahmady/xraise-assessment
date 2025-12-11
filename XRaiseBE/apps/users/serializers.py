@@ -6,7 +6,7 @@ User = get_user_model()
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, style={'input_type': 'password'}, trim_whitespace=False)
+    password = serializers.CharField(write_only=True, style={"input_type": "password"}, trim_whitespace=False)
 
     class Meta:
         model = User
@@ -33,4 +33,3 @@ class JWTSerializer(TokenObtainPairSerializer):
         token["subscription_status"] = user.subscription_status
         token["current_plan"] = user.current_plan
         return token
-
