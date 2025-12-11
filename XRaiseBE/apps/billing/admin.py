@@ -13,4 +13,3 @@ class CheckoutSessionAdmin(admin.ModelAdmin):
 class SubscriptionEventAdmin(admin.ModelAdmin):
     list_display = ("user", "event_type", "plan", "subscription_status", "amount_cents", "created_at")
     search_fields = ("event_type", "user__username")
-

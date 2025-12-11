@@ -42,7 +42,16 @@ class UpgradeView(APIView):
 
         session = stripe.checkout.Session.create(
             mode="payment",
-            line_items=[{"price": price_id, "quantity": 1}],
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": Currency.US_DOLLAR.lower(),
+                        "product_data": {"name": f"{plan.title()} Plan Upgrade"},
+                        "unit_amount": plan_to_price(plan),
+                    },
+                    "quantity": 1,
+                }
+            ],
             success_url=success_url,
             cancel_url=cancel_url,
             metadata={"user_id": request.user.id, "plan": plan},
@@ -71,13 +80,21 @@ class DowngradeView(APIView):
             )
             return Response({"detail": "Downgraded to no plan"})
 
-        price_id = _plan_to_price(plan)
         success_url = f"{settings.FRONTEND_URL}/dashboard?session_id={{CHECKOUT_SESSION_ID}}"
         cancel_url = f"{settings.FRONTEND_URL}/dashboard"
 
         session = stripe.checkout.Session.create(
             mode="payment",
-            line_items=[{"price": price_id, "quantity": 1}],
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": Currency.US_DOLLAR.lower(),
+                        "product_data": {"name": f"{plan.title()} Plan"},
+                        "unit_amount": plan_to_price(plan),
+                    },
+                    "quantity": 1,
+                }
+            ],
             success_url=success_url,
             cancel_url=cancel_url,
             metadata={"user_id": request.user.id, "plan": plan},
@@ -94,9 +111,7 @@ def stripe_webhook(request):
     payload = request.body
     sig_header = request.META.get("HTTP_STRIPE_SIGNATURE", "")
     try:
-        event = stripe.Webhook.construct_event(
-            payload, sig_header, settings.STRIPE_WEBHOOK_SECRET
-        )
+        event = stripe.Webhook.construct_event(payload, sig_header, settings.STRIPE_WEBHOOK_SECRET)
     except (ValueError, stripe.error.SignatureVerificationError):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -129,4 +144,3 @@ def stripe_webhook(request):
         )
 
     return Response(status=status.HTTP_200_OK)
-
