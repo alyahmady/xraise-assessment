@@ -10,12 +10,10 @@ class CheckoutSession(models.Model):
         COMPLETED = "completed", "Completed"
         FAILED = "failed", "Failed"
 
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, db_index=True)
     plan = models.CharField(max_length=16, choices=PremiumPlan.choices)
     session_id = models.CharField(max_length=128, unique=True)
-    status = models.CharField(
-        max_length=16, choices=SessionStatus.choices, default=SessionStatus.CREATED
-    )
+    status = models.CharField(max_length=16, choices=SessionStatus.choices, default=SessionStatus.CREATED)
     amount_total = models.PositiveBigIntegerField(default=0)  # cents
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -24,7 +22,7 @@ class CheckoutSession(models.Model):
 
 
 class SubscriptionEvent(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, db_index=True)
     event_type = models.CharField(max_length=64)
     plan = models.CharField(max_length=16, choices=PremiumPlan.choices)
     subscription_status = models.CharField(
