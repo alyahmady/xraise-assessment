@@ -47,7 +47,7 @@ class UpgradeView(APIView):
                         "unit_amount": plan_to_price(plan),
                     },
                     "quantity": 1,
-                },
+                }
             ],
             success_url=success_url,
             cancel_url=cancel_url,
@@ -90,7 +90,7 @@ class DowngradeView(APIView):
                         "unit_amount": plan_to_price(plan),
                     },
                     "quantity": 1,
-                },
+                }
             ],
             success_url=success_url,
             cancel_url=cancel_url,
@@ -112,11 +112,11 @@ def stripe_webhook(request):
     except (ValueError, stripe.error.SignatureVerificationError):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    if event["type"] == "checkout.session.completed":
+    if event["type"] == "payment_intent.succeeded":
         session = event["data"]["object"]
         user_id = session["metadata"].get("user_id")
         plan = session["metadata"].get("plan")
-        amount_total = session.get("amount_total", 0)
+        amount_total = session.get("amount", 0)
 
         try:
             user = User.objects.get(id=user_id)
