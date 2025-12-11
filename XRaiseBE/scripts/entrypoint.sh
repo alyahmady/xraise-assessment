@@ -34,6 +34,7 @@ until postgres_ready; do
 done
 >&2 echo 'PostgresSQL is available'
 
+python3 manage.py collectstatic --noinput
 python3 manage.py migrate --noinput
 python3 manage.py createsuperuser --noinput || echo "Superuser creation failed, continuing..."
 
