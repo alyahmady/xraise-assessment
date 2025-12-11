@@ -11,11 +11,17 @@ type BillingStatus = {
 };
 
 export default function Dashboard() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const router = useRouter();
   const [billing, setBilling] = useState<BillingStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (session?.error === "RefreshAccessTokenError") {
+      signOut({ callbackUrl: "/" });
+    }
+  }, [session?.error]);
 
   const fetchStatus = async () => {
     if (!session?.accessToken) return;
@@ -103,4 +109,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
