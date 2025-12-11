@@ -3,7 +3,7 @@ import { signIn, useSession } from "next-auth/react";
 import axios from "axios";
 import { useRouter } from "next/router";
 
-const backendBase = process.env.BACKEND_URL || "http://localhost:8000";
+const backendBase = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export default function Home() {
   const { data: session } = useSession();
@@ -37,7 +37,7 @@ export default function Home() {
       await axios.post(`${backendBase}/api/users/register/`, { username, email, password });
       await signIn("credentials", { username, password, redirect: false });
       router.push("/dashboard");
-    } catch (err) {
+    } catch {
       setAuthError("Registration failed");
     }
   };
@@ -72,4 +72,3 @@ export default function Home() {
     </div>
   );
 }
-
