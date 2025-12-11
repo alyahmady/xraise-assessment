@@ -37,4 +37,4 @@ done
 python3 manage.py migrate --noinput
 python3 manage.py createsuperuser --noinput || echo "Superuser creation failed, continuing..."
 
-/usr/bin/supervisord -c /etc/supervisor/supervisord.conf
+gunicorn backend.asgi:application
