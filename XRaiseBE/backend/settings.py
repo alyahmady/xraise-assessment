@@ -119,6 +119,3 @@ CORS_ALLOW_ALL_ORIGINS = os.getenv("CORS_ALLOW_ALL_ORIGINS", "false").strip().lo
 
 STRIPE_SECRET_KEY = os.environ["STRIPE_SECRET_KEY"]
 STRIPE_WEBHOOK_SECRET = os.environ["STRIPE_WEBHOOK_SECRET"]
-
-STRIPE_PRICE_BASIC = os.getenv("STRIPE_PRICE_BASIC", "price_basic_placeholder")
-STRIPE_PRICE_PRO = os.getenv("STRIPE_PRICE_PRO", "price_pro_placeholder")

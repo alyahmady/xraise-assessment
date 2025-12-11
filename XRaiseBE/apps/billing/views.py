@@ -12,15 +12,16 @@ from apps.billing.serializers import BillingStatusSerializer, DowngradeSerialize
 from apps.users.models import PremiumPlan, SubscriptionStatus
 
 User = get_user_model()
+from backend.enums import Currency, PlanPrice
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
-def _plan_to_price(plan: str) -> str:
+def plan_to_price(plan: str) -> int:
     if plan == PremiumPlan.BASIC:
-        return settings.STRIPE_PRICE_BASIC
+        return PlanPrice.BASIC
     if plan == PremiumPlan.PRO:
-        return settings.STRIPE_PRICE_PRO
+        return PlanPrice.PRO
     raise ValueError("Unsupported plan for price lookup")
 
 
@@ -35,7 +36,6 @@ class UpgradeView(APIView):
         serializer = UpgradeSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         plan = serializer.validated_data["plan"]
-        price_id = _plan_to_price(plan)
 
         success_url = f"{settings.FRONTEND_URL}/dashboard?session_id={{CHECKOUT_SESSION_ID}}"
         cancel_url = f"{settings.FRONTEND_URL}/dashboard"
