@@ -38,7 +38,7 @@ COPY --from=compile-image /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
 COPY apps /app/apps
-COPY config /app/config
+COPY backend /app/backend
 COPY manage.py /app/manage.py
 COPY gunicorn_conf.py /app/gunicorn_conf.py
 
