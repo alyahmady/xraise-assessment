@@ -25,6 +25,5 @@ class User(AbstractUser):
         default=PremiumPlan.NONE,
     )
     total_amount_paid = models.PositiveBigIntegerField(default=0)  # stored in cents
-    stripe_customer_id = models.CharField(max_length=128, blank=True, null=True)
-
+    stripe_customer_id = models.CharField(max_length=128, null=True)
 
